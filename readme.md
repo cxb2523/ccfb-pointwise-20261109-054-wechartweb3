@@ -47,6 +47,14 @@ If you know a more efficent way, or any other better than this please let the co
 - multi chain server querying [ currently bsc only ] 🔴
 
 
+### Collect the pair reserves
+
+- `node workers/collect.reserves.js --chain amoy --once` scans the reserves of every pair of the chain factory at the latest confirmed block ( chain head minus `confirmations` )
+- results are written to `log/reserves.json` and `log/reserves.csv` ( flat header, append-only ), deduplicated by pair address + block number, so re-running the same command is idempotent
+- every worker shares a single rpc limiter: max QPS, exponential backoff on 429 / -32005 and skip-after-N-consecutive-failures are all configurable per chain in `config.js` ( see `config.example.js` ) or via the `RESERVES_*` env vars ( see `.env.example` )
+- pairs that keep failing are logged once to `log/reserves-failed.log`; api keys of the rpc url are always masked in the logs
+- the last synced block is tracked in `log/reserves.cursor.json`; records inside the reorg window are pruned on startup instead of being appended again
+
 ### Query the prices
 
 - Inside the repo you can find a rest api built with `expressjs` that you can use to query the scraped prices
